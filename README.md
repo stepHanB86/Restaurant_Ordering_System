@@ -17,7 +17,8 @@ The app automatically creates and populates an SQL database with the required ta
 
 - **Frontend Upgrade:** Redevelop the front end using Flutter for a modern, cross-platform user experience.
 - **Kitchen Organization:** Add features to assist with the organization and management of kitchen operations.
-- **Data Analytics:** Expand the app to capture and analyze all business-relevant operational data
+- **Cash Register System:** Integrate a cash register system.
+- **Data Analytics:** Expand the app to capture and analyze all business-relevant operational data.
 
 ## Setup
 
