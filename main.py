@@ -25,7 +25,7 @@ def run_once():
 # Database Configuration
 
 username = 'root'
-password = '' 
+password =
 host = 'localhost'
 database = 'restaurant'
 
