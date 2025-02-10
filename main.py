@@ -29,14 +29,6 @@ password =
 host = 'localhost'
 database = 'restaurant'
 
-# Create the database if it does not exist.
-engine = create_engine(f'mysql+pymysql://{username}:{password}@{host}/')
-with engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
-    conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {database}"))
-
-app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{username}:{password}@{host}/{database}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
 
 # Model Definitions
