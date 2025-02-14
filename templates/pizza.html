@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Pizza Bestellung</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding-bottom: 150px; background-color: rgb(243, 178, 183); }
+    .sticky-top { position: sticky; top: 0; z-index: 1000; }
+    .menu-item {
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      background-color: rgb(251, 244, 244);
+      cursor: pointer;
+    }
+    .item-info { margin-bottom: 5px; }
+    .item-name { font-weight: bold; font-size: 1.25rem; color: black; }
+    .item-price { font-size: 1.1rem; color: black; }
+    .btn-groups { display: flex; flex-direction: row; margin-bottom: 5px; }
+    .btn-group { margin-right: 5px; }
+    .btn-fixed { width: 45px; background-color: rgb(243, 178, 183); color: black; }
+    .quantity-btn.active { background-color: darkblue !important; color: white !important; }
+    .beschreibung { font-size: 0.9rem; color: gray; }
+    .cart-preview { margin-top: 15px; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Pizza Bestellung</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('getraenke_view') }}">Getränke</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('speisen_view') }}">Speisen</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('pizza_view') }}">Pizza</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('bezahlen_view') }}">Bezahlen</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('warenkorb_view') }}">Warenkorb</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container mt-5">
+    <!-- Tischnummer-Eingabe -->
+    <div class="mb-3">
+      <label for="tableNumber" class="form-label">Tischnummer</label>
+      <input type="number" class="form-control" id="tableNumber" name="tableNumber" placeholder="Tischnummer eingeben">
+    </div>
+    <!-- Warenkorb-Vorschau -->
+    <div class="cart-preview">
+      <a href="{{ url_for('warenkorb_view') }}" class="btn btn-warning" style="background-color: rgb(29, 43, 132);"> 
+        Bestellübersicht(<span id="cartCount">0</span> Artikel)
+      </a>
+      <span id="cartTable"></span>
+    </div>
+    
+    <h1>Pizza auswählen</h1>
+    <div id="menuItems">
+      {% for item in menu_items %}
+      <div class="menu-item" onclick="openRemarksModal('{{ item.artikel_nr }}', '{{ item.name }}')">
+        <div class="item-info">
+          <div class="item-name">{{ item.name }}</div>
+          <div class="item-price">{{ item.preis }}€</div>
+        </div>
+        <div class="btn-groups">
+          <div class="btn-group" role="group">
+            {% for i in range(1,6) %}
+            <button type="button" id="btn{{ item.artikel_nr }}_{{ i }}" class="btn btn-outline-secondary quantity-btn btn-fixed"
+              onclick="event.stopPropagation(); addToCart('{{ item.artikel_nr }}', '{{ item.name }}', {{ item.preis }}, 0, {{ i }}, 'Pizza')">
+              {{ i }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="beschreibung">{{ item.beschreibung }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  
+  <!-- Modal für Anmerkungen -->
+  <div class="modal fade" id="remarksModal" tabindex="-1" aria-labelledby="remarksModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="remarksModalLabel">Anmerkungen hinzufügen</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Schließen"></button>
+        </div>
+        <div class="modal-body">
+          <textarea class="form-control" id="remarksText" placeholder="Anmerkungen eingeben"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Speichern</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Versuche, vorhandene Session-Daten in den Warenkorb zu laden.
+    let cart = {{ session.get('cart')|tojson|safe }} || {};
+    let currentItemId = null;
+    if("{{ session.get('tableNumber') }}"){
+      document.getElementById('tableNumber').value = "{{ session.get('tableNumber') }}";
+    }
+    
+    function updateCartPreview() {
+      let count = 0;
+      for (const key in cart) {
+        count += cart[key].quantity;
+      }
+      document.getElementById('cartCount').textContent = count;
+      let tableNumber = document.getElementById('tableNumber').value;
+      if(tableNumber){
+        document.getElementById('cartTable').textContent = " (Tisch " + tableNumber + ")";
+      } else {
+        document.getElementById('cartTable').textContent = "";
+      }
+    }
+    
+    function addToCart(artikelNr, name, preis, groesse, quantity, category) {
+      let tableNumber = document.getElementById('tableNumber').value;
+      if (!tableNumber) {
+        alert("Bitte gib zuerst eine Tischnummer ein.");
+        return;
+      }
+      let item = {
+        artikel_nr: parseInt(artikelNr),
+        name: name,
+        preis: parseFloat(preis),
+        groesse: groesse,
+        category: category
+      };
+      // Entferne active-Klasse von allen Buttons in diesem Menüitem
+      for (let i = 1; i <= 5; i++) {
+        let btn = document.getElementById('btn' + artikelNr + '_' + i);
+        if (btn) { btn.classList.remove('active'); }
+      }
+      // Markiere den gewählten Button als aktiv
+      document.getElementById('btn' + artikelNr + '_' + quantity).classList.add('active');
+      
+      fetch("{{ url_for('add_to_cart_route') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          item: item,
+          quantity: parseInt(quantity),
+          tableNumber: parseInt(tableNumber)
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.error){
+          alert(data.error);
+        } else {
+          let key = artikelNr.toString();
+          cart[key] = {
+            artikel_nr: item.artikel_nr,
+            name: item.name,
+            preis: item.preis,
+            quantity: quantity,
+            category: category,
+            remarks: cart[key] ? cart[key].remarks || "" : ""
+          };
+          updateCartPreview();
+        }
+      })
+      .catch(error => console.error("Error:", error));
+    }
+    
+    function openRemarksModal(artikelNr, name) {
+      currentItemId = artikelNr;
+      document.getElementById('remarksModalLabel').textContent = "Anmerkungen für " + name;
+      var modal = new bootstrap.Modal(document.getElementById('remarksModal'));
+      modal.show();
+    }
+    
+    document.getElementById('remarksModal').addEventListener('hidden.bs.modal', function () {
+      let remarks = document.getElementById('remarksText').value;
+      if (currentItemId) {
+        let key = currentItemId.toString();
+        if (cart[key]) {
+          cart[key].remarks = remarks;
+          let tableNumber = document.getElementById('tableNumber').value;
+          fetch("{{ url_for('add_to_cart_route') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              item: { artikel_nr: currentItemId, name: "", preis: 0 },
+              quantity: cart[key].quantity,
+              tableNumber: parseInt(tableNumber),
+              remarks: remarks
+            })
+          }).then(response => response.json())
+            .then(data => { updateCartPreview(); });
+        }
+      }
+      document.getElementById('remarksText').value = "";
+      currentItemId = null;
+    });
+    
+    updateCartPreview();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
