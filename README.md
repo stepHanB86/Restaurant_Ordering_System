@@ -5,10 +5,29 @@ A Flask-based web application for managing restaurant orders - with a dynamic pr
 ## Overview
 
 This project is a restaurant ordering system that allows staff to:
-- Browse a product catalog divided into categories
-- Add items from different categories to a persistent shopping cart.
-- Finalize orders per table, where each new order is created separately.
-- View all open and past orders and process payments by aggregating open orders for a table.
+- **Browse a product catalog divided into categories**
+
+![Order Drinks](screenshots/screenshotGetraenkeBestellung.PNG)
+![Order Pizza](screenshots/screenshotPizzaBestellung.PNG)
+
+- **Add items from different categories to a persistent shopping cart.**
+
+![View Cart](screenshots/screenshotWarenkorb.PNG)
+
+- **Finalize orders per table, where each new order is created separately.**
+- **View all open and past orders and process payments by aggregating open orders for a table.**
+
+![View Orders](screenshots/screenshotBestellungen.PNG)
+
+![Payment](screenshots/screenshotBezahlen.PNG)
+
+![Payment Overview](screenshots/screenshotBezahlen2.PNG)
+
+- **Order is payed**
+
+![Order payed](screenshots/screenshotBestellungBezahlt.PNG)
+
+
 
 The app automatically creates the required SQL tables (including tables for employees, customers, reservations, orders, order items, invoices, and product catalogs) and includes a view that integrates products from multiple categories.
 
