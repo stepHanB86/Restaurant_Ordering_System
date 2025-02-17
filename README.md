@@ -8,6 +8,7 @@ This project is a restaurant ordering system that allows staff to:
 - **Browse a product catalog divided into categories**
 
 ![Order Drinks](screenshots/screenshotGetraenkeBestellung.PNG)
+
 ![Order Pizza](screenshots/screenshotPizzaBestellung.PNG)
 
 - **Add items from different categories to a persistent shopping cart.**
@@ -22,8 +23,6 @@ This project is a restaurant ordering system that allows staff to:
 ![Payment](screenshots/screenshotBezahlen.PNG)
 
 ![Payment Overview](screenshots/screenshotBezahlen2.PNG)
-
-- **Order is payed**
 
 ![Order payed](screenshots/screenshotBestellungBezahlt.PNG)
 
